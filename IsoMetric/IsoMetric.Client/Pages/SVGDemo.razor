@@ -1,0 +1,107 @@
+﻿@page "/demo"
+
+<h3>SVGDemo</h3>
+<svg width="1200px" height="1200px" style="background-color:black;" viewBox="0 0 1200 1200">
+    <style>
+        .small {
+            font: italic 13px sans-serif;
+            fill: white;
+            color: red;
+        }
+        .line {
+            stroke: red;
+            z-index:1;
+            opacity:0.8;
+        }
+
+        .line:hover {
+            z-index:99;
+            stroke:blue;
+            opacity:1;
+            
+        }
+    </style>
+@* 
+    @for (int i = 0; i <= 10; i += 1)
+    {
+        <line x1=@(i*100) y1=0 x2=@(i*100) y2=1000 stroke="white" />
+        <line x1=0 y1=@(i*100) x2=1000 y2=@(i*100) stroke="white" />
+
+
+
+
+    } *@
+
+
+    @for (int x = 1; x < 10; x += 1)
+    {
+        @for (int y = 1; y < 10; y += 1)
+        {
+            
+            <g>
+               @*  <circle cx="@(x*120)" cy="@(y*120)" r="20" fill="lightblue"></circle> *@
+                <Cylinder X="@(x*120)" Y="@(y*120)" Radius="20" Tilt="0.33" Height="30" ></Cylinder>
+                <text x="@(x*120)" y="@(y*120+7)" text-anchor="middle"
+                      stroke="red"
+                      stroke-width="1px"
+                      alignment-baseline="middle">
+                    @x,@y
+                </text>
+            </g>
+
+        }
+
+    }
+
+    @{
+
+        var prevNode = Nodes.Where(x=> x.X == 5 && x.Y == 5).First();
+        Nodes.Remove(prevNode);
+        Dictionary<string, int> map = new Dictionary<string, int>();
+        foreach (var node in Nodes.OrderBy(x=>x.R))
+        {
+            <SvgLine X1="@prevNode.X" Y1="@prevNode.Y" X2="@node.X" Y2="@node.Y" Map="@map"></SvgLine>
+            prevNode = node;
+        }
+    }
+    
+
+    <defs><marker markerWidth="5" markerHeight="5" refX="1" refY="1" viewBox="0 0 5 5" orient="auto" id="SvgjsMarker1039"><polygon points="0,2 0,0 2,1" fill="hsl(335, 77%, 50%)"></polygon></marker></defs>
+    
+</svg>
+
+
+
+@code {
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Nodes.Clear();
+        for( int x=1; x<10; x+=1)
+        {
+            for( int y=1; y<10; y+=1)
+            {
+                Nodes.Add(new Node(x, y));
+            }
+        }
+    }
+
+
+    List<Node> Nodes = new List<Node>();
+
+
+
+    record Node( int X, int Y )
+    {
+        static Random random = new Random();
+
+        public float R { get; set; } = (float)random.NextDouble();
+
+
+
+    }; 
+
+
+
+
+}

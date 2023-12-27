@@ -1,0 +1,338 @@
+﻿<g stroke-width="3"   fill="none" stroke-linecap="round" stroke-linejoin="round" class="line">
+    <path d="@path"  marker-end="url(#SvgjsMarker1039)"></path>
+</g>
+
+@code {
+
+    [Parameter,EditorRequired]
+    public int X1 { get; set; } = 0;
+
+    [Parameter, EditorRequired]
+    public int X2 { get; set; } = 100;
+
+    [Parameter, EditorRequired]
+    public int Y1 { get; set; } = 0;
+
+    [Parameter, EditorRequired]
+    public int Y2 { get; set; } = 0;
+
+    [Parameter, EditorRequired]
+    public Dictionary<string,int> Map { get; set; } = new Dictionary<string, int>();
+
+
+    const int Radius = 20;
+    const int Mult = 120;
+    const int LineWidth = 6;
+
+    string path = string.Empty;
+
+    int AdjustMap( string key, int v )
+    {
+
+        if ( Map.ContainsKey(key))
+        {
+            int counter = Map[key];
+            counter += 1;
+            Map[key] = counter;
+            var offset = counter / 2 * LineWidth * (counter % 2 == 0 ? 1 : -1);
+            Console.WriteLine(key, v, offset);
+            return v + offset;
+
+        }
+        else
+        {
+            Map[key] = 1;
+            Console.WriteLine(key, v, 0);
+            return v;
+        }
+
+        
+    }
+
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        /* Determine the starting point */
+        int initX = X1 * Mult;
+        int initY = Y1 * Mult;
+        Console.WriteLine($"X1={X1}, Y1={Y1}, X2={X2}, Y2={Y2}");
+
+        if ( X1 == X2 && Y1 == Y2 )
+        {
+            path = "";
+
+        }
+
+        else if (X1 == X2 && Y2 == Y1+1)
+        {
+            initY += Radius;
+            initX = AdjustMap($"NodeY{X1}{Y1}{Y2}", initX);
+            path = $"M {initX} {initY} L {initX} {Y2*Mult - Radius}";
+        }
+
+        else if (X1 == X2 && Y2 == Y1 - 1)
+        {
+            initY -= Radius;
+            initX = AdjustMap($"NodeY{X1}{Y2}{Y1}", initX);
+            path = $"M {initX} {initY} L {initX} {Y2 * Mult + Radius}";
+
+        }
+
+        else if (X1 == X2-1 && Y2 == Y1)
+        {
+            initX += Radius;
+            initY = AdjustMap($"NodeX{Y1}{X1}{X2}", initY);
+            path = $"M {initX} {initY} L {X2*Mult-Radius} {initY}";
+        }
+
+        else if (X1 == X2+1 && Y2 == Y1)
+        {
+            initX -= Radius;
+            initY = AdjustMap($"NodeX{Y1}{X2}{X1}", initY);
+            path = $"M {initX} {initY} L {X2*Mult+Radius} {initY}";
+        }
+        else if ( X1 <= X2 && Y1 == Y2)
+        {
+            initY -= Radius;
+            initX = AdjustMap($"NodeY{X1}{Y1-1}{Y1}", initX);
+            path = $"M {initX} {initY} ";
+
+            int y = (int)(((double)Y1 - 0.5) * Mult);
+            y = AdjustMap($"Horizontal{Y1-1}{Y1}", y);
+            int x = initX; 
+            path += $"L {initX} {y} ";
+            x = X2 * Mult;
+            x = AdjustMap($"NodeY{X2}{Y1-1}{Y1}", x);
+            
+            path += $"L {x} {y} ";
+            
+            
+            y = Y2 * Mult - Radius;
+
+            path += $"L {x} {y} ";
+
+
+        }
+
+        else if (X1 > X2 && Y1 == Y2)
+        {
+            initY -= Radius;
+            initX = AdjustMap($"NodeY{X1}{Y1 - 1}{Y1}", initX);
+
+            path = $"M {initX} {initY} ";
+            int y = (int)(((double)Y1 - 0.5) * Mult);
+            y = AdjustMap($"Horizontal{Y1 - 1}{Y1}", y);
+            int x = initX;
+            path += $"L {initX} {y} ";
+            x = X2 * Mult;
+            x = AdjustMap($"NodeY{X2}{Y1 - 1}{Y1}", x);
+            path += $"L {x} {y} ";
+            y = Y2 * Mult - Radius;
+            path += $"L {x} {y} ";
+
+
+        }
+
+
+        else if (X1 < X2 && Y2 == Y1 - 1)
+        {
+            initY -= Radius;
+            initX = AdjustMap($"NodeY{X1}{Y1 - 1}{Y1}", initX);
+            path = $"M {initX} {initY} ";
+            int x = initX;
+            int y = (int)(((double)Y2 + 0.5) * Mult);
+            y = AdjustMap($"Horizontal{Y1 - 1}{Y1}", y);
+            path += $"L {x} {y} ";
+            x = X2 * Mult;
+            x = AdjustMap($"NodeY{X2}{Y1 - 1}{Y1}", x);
+            path += $"L {x} {y} ";
+            y = Y2 * Mult + Radius;
+            path += $"L {x} {y} ";
+
+
+
+
+        }
+
+
+        else if ( X1 <= X2 )
+        {
+            initX += Radius;
+            initY = AdjustMap($"NodeX{Y1}{X1}{X1+1}", initY);
+
+
+            path = $"M {initX} {initY} ";
+
+            int x = (int)(((double)X1 + 0.5) * Mult);
+            x = AdjustMap($"Vertical{X1}{X1+1}", x);
+
+
+            int y = initY;
+            path += $"L {x} {y} ";
+
+            if ( X2 == X1 + 1 )
+            {
+                y = Y2 * Mult;
+                y = AdjustMap($"NodeX{Y2}{X1}{X2}", y);
+                path += $"L {x} {y} ";
+                x = X2 * Mult - Radius;
+                path += $"L {x} {y} ";
+            }
+            else if ( X2 == X1 && Y2 >= Y1 )
+            {
+                y = Y2  * Mult;
+                y = AdjustMap($"NodeX{Y2}{X1}{X1+1}", y);
+                path += $"L {x} {y} ";
+
+                x = X2 * Mult + Radius;
+                path += $"L {x} {y} ";
+
+            }
+
+            else if (X2 == X1 && Y2 < Y1)
+            {
+                y = Y2 * Mult;
+                y = AdjustMap($"NodeX{Y2}{X1}{X1 + 1}", y);
+                path += $"L {x} {y} ";
+
+                x = X2 * Mult + Radius;
+                path += $"L {x} {y} ";
+
+            }
+
+
+
+
+
+
+            else if (Y2 == Y1-1)
+            {
+                y = (int)(((double)Y2 + 0.5) * Mult);
+                y = AdjustMap($"Horizontal{Y2}{Y2+1}", y);
+                path += $"L {x} {y} ";
+
+                x = X2 * Mult;
+                x = AdjustMap($"NodeY{X2}{Y2}{Y2+1}", x);
+                path += $"L {x} {y} ";
+
+                y = Y2 * Mult + Radius;
+                path += $"L {x} {y} ";
+
+            }
+
+
+            else if ( Y2 >= Y1 )
+            {
+                y = (int)(((double)Y2 - 0.5) * Mult);
+                y = AdjustMap($"Horizontal{Y2-1}{Y2}", y);
+                path += $"L {x} {y} ";
+
+                x = X2  * Mult;
+                x = AdjustMap($"NodeY{X2}{Y2-1}{Y2}", x);
+                path += $"L {x} {y} ";
+
+                y = Y2 * Mult - Radius;
+                path += $"L {x} {y} ";
+
+            }
+            else
+            {
+                y = (int)(((double)Y2 + 0.5) * Mult);
+                y = AdjustMap($"Horizontal{Y2}{Y2+1}", y);
+
+                path += $"L {x} {y} ";
+                x = X2 * Mult;
+                x = AdjustMap($"NodeY{X2}{Y2}{Y2+1}", x);
+                path += $"L {x} {y} ";
+
+                y = Y2 * Mult + Radius; 
+                path += $"L {x} {y} ";
+            }
+        }
+
+        else if ( X1 > X2 && Y2 == Y1-1)
+        {
+            initY -= Radius;
+            initX = AdjustMap($"NodeY{X1}{Y1 - 1}{Y1}", initX);
+
+
+            path = $"M {initX} {initY} ";
+
+
+
+            int x = initX;
+            int y = (int)(((double)Y2 + 0.5) * Mult);
+            y = AdjustMap($"Horizontal{Y2}{Y2+1}", y);
+            path += $"L {x} {y} ";
+            x = X2 * Mult;
+            x = AdjustMap($"NodeY{X2}{Y2}{Y2+1}", x);
+
+            path += $"L {x} {y} ";
+            y = Y2 * Mult + Radius;
+            path += $"L {x} {y} ";
+
+
+
+
+        }
+
+        else
+        {
+            initX -= Radius;
+            initY = AdjustMap($"NodeX{Y1}{X1-1}{X1}", initY);
+
+            path = $"M {initX} {initY} ";
+
+            int x = (int)(((double)X1 - 0.5) * Mult);
+            x = AdjustMap($"Vertical{X1-1}{X1}", x);
+            int y = initY;
+            path += $"L {x} {y} ";
+            if (X2 == X1 - 1)
+            {
+                y = Y2 * Mult;
+                y = AdjustMap($"NodeX{Y2}{X2}{X1}", y);
+
+                path += $"L {x} {y} ";
+                x = X2 * Mult + Radius;
+                path += $"L {x} {y} ";
+            }
+
+
+
+            else if (Y2 >= Y1)
+            {
+                y = (int)(((double)Y2 - 0.5) * Mult);
+                y = AdjustMap($"Horizontal{Y2-1}{Y2}", y);
+
+                path += $"L {x} {y} ";
+
+                x = X2*Mult;
+                x = AdjustMap($"NodeY{X2}{Y2-1}{Y2}", x);
+
+                path += $"L {x} {y} ";
+
+                y = Y2 * Mult - Radius;
+                path += $"L {x} {y} "; 
+            }
+            else
+            {
+                y = (int)(((double)Y2 + 0.5) * Mult);
+                y = AdjustMap($"Horizontal{Y2}{Y2+1}", y);
+
+                path += $"L {x} {y} ";
+
+                x = X2*Mult;
+                x = AdjustMap($"NodeY{X2}{Y2}{Y2+1}", x);
+
+                path += $"L {x} {y} ";
+
+                y = Y2 * Mult + Radius;
+                path += $"L {x} {y} ";
+            }
+
+        }
+
+    }
+
+}

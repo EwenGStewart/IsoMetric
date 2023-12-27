@@ -1,0 +1,41 @@
+﻿<g transform="translate(@offsetX, @offsetY)">
+    <path d="@path" fill="#eee" stroke="black"></path>
+
+
+</g>
+
+@code {
+        [Parameter, EditorRequired]
+        public int X { get; set; } = 0;
+        [Parameter, EditorRequired]
+        public int Y { get; set; } = 0;
+        [Parameter]
+        public double Radius { get; set; } = 20;
+        [Parameter]
+        public double Height { get; set; } = 30;
+        [Parameter]
+        public double Tilt { get; set; } = 0.33;
+
+        double tiltAdjustedHeight => Height * Math.Cos((Tilt * Math.PI) / 2);
+        double diameter => Radius* 2;
+        double ry => Math.Round(Tilt * Radius  , 3 ) ;
+        double rx => Radius;
+        double height => tiltAdjustedHeight + 2 * Tilt * Radius;
+        double width => diameter;
+        double offsetX => X - width/2;
+        double offsetY => Y - height/2;
+
+
+        string path = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        //M 0,6.6 a 20,6.6 0,0,0 40 0 a 20,6.6 0,0,0 -40 0 l 0,26.058945433145738 a 20,6.6 0,0,0 40 0 l 0,-26.058945433145738"
+
+        path = $"M 0 {ry}  a {rx},{ry} 0,0,0 {diameter} 0 a {rx},{ry} 0,0,0 {-1 * diameter} 0 l 0,{tiltAdjustedHeight}  a {rx},{ry} 0,0,0 {diameter} 0 l 0,{-tiltAdjustedHeight} "; 
+
+    }
+
+
+}
